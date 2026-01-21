@@ -1,0 +1,26 @@
+{
+  "branch": "feature-example",
+  "stories": [
+    {
+      "id": "1",
+      "title": "Add login form",
+      "priority": 10,
+      "acceptance_criteria": [
+        "User can enter email and password",
+        "Validation errors display when fields are empty",
+        "Successful login redirects to the dashboard"
+      ],
+      "passes": false
+    },
+    {
+      "id": "2",
+      "title": "Display user profile",
+      "priority": 5,
+      "acceptance_criteria": [
+        "User avatar and name show on the profile page",
+        "Edit profile button is present"
+      ],
+      "passes": false
+    }
+  ]
+}

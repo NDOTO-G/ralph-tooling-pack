@@ -1,0 +1,14 @@
+# Executive Summary
+
+This research pack distils our investigation into building **Ralph loops** on top of three agent runtimes: **OpenCode**, **Codex CLI** and **Claude Code**.  The materials cover core Ralph concepts, detailed analysis of each tool’s capabilities and limitations, cross‑tool comparisons and practical scripts for orchestrating long‑running coding agents.
+
+## Core findings
+
+1. **Ralph loops** are simple bash loops that repeatedly invoke an AI coding agent to implement a backlog of tasks.  They rely on a persisted plan (PRD), a progress log, and prompts that instruct the agent to pick the highest‑priority story, implement it, run tests and log results.  By discarding chat history and reloading context from disk each iteration, they avoid context rot and allow infinite task lists.
+2. **OpenCode** is the most mature runtime for Ralph loops.  It exposes a CLI (`opencode run`, `serve`, `session list`) that streams newline‑delimited JSON events; supports a rich skill system with YAML front‑matter; provides a native plugin system for pre‑/post‑tool hooks and context compaction; and allows fine‑grained permissions and `maxSteps` limits.  These features make it ideal as the primary unattended executor.
+3. **Codex CLI** offers non‑interactive runs via `codex exec --json` and can route to local models via the `--oss` flag.  However, it lacks a general hook API or step limits and relies on sandbox flags and `.rules` files for approvals.  A Ralph harness must implement its own pre/post hooks, validation and escalation logic when using Codex.
+4. **Claude Code** excels at complex reasoning and advanced skills (subagents, dynamic context injection), but in headless mode (`claude -p`) it disables slash commands and skills must be inlined.  Its hook system allows shell scripts to run at events (e.g., PreToolUse, PermissionRequest, SessionEnd) and the `--allowedTools` flag controls auto‑approved tools.  There is no built‑in `maxSteps`, so iteration control lives in the harness.
+5. **Comparison**: OpenCode offers the most comprehensive plugin and skill ecosystem; Codex is flexible and cost‑effective when paired with local models; Claude provides powerful skills and reasoning at higher cost.  Each tool has distinct permission and sandboxing models that must be respected.
+6. **Recommended architecture**: Use OpenCode for unattended bulk work, Codex with `--oss` for cost‑sensitive or offline runs, and Claude for review, escalation and tasks that benefit from deep reasoning.  A unified harness can switch between tools by adhering to a normalised adapter interface.
+
+The remainder of this pack contains detailed notes on each tool, best‑practice playbooks, example workflows, prompts and scripts to implement the recommendations above.  See **50_COMPARISONS/01_feature_matrix.md** for a side‑by‑side comparison and **60_SCRIPTS_AND_TEMPLATES/scripts/harness_template.sh** for a starting point script.
