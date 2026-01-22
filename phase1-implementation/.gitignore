@@ -1,0 +1,29 @@
+# Ralph working files (do not commit)
+.autoralph/*
+!.autoralph/config.yaml
+!.autoralph/work_ledger.json
+!.autoralph/work_docs/
+
+# Node modules
+node_modules/
+
+# Test coverage
+coverage/
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

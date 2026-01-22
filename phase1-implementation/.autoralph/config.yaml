@@ -1,0 +1,49 @@
+# Ralph Configuration - Phase 1
+# Customize these values for your repository
+
+# Project identification
+project: my-test-project
+schema_version: "2.0"
+
+# Work tracking files
+works_ledger_path: .autoralph/work_ledger.json
+works_doc_path: .autoralph/work_docs
+
+# Git configuration
+base_branch: dev
+worktree_root: .autoralph/worktrees
+
+# Validation commands (customize for your project)
+validate_cmd: npm test
+merge_test_cmd: npm test
+# lint_cmd: npm run lint        # Optional
+# type_check_cmd: npm run type-check  # Optional
+
+# OpenCode configuration
+opencode:
+  # attach_url: http://localhost:4096  # Optional: if using opencode serve
+  model: anthropic/claude-sonnet-4-5   # Or your preferred model
+  agent: default
+  max_tries_per_item: 3
+  max_steps: 10
+  json_events: true
+  timeout_minutes: 30
+
+# Budget controls
+budgets:
+  max_parallel_agents: 1  # Phase 1: only 1 agent
+  max_total_time_hours: 2
+  max_cost_usd: 10.0
+
+# Selection criteria
+selection:
+  count: 1  # Phase 1: only 1 task
+  criteria: priority_and_unblocked
+  min_priority: 1
+
+# Merge configuration
+merge:
+  strategy: sequential
+  no_ff: true
+  squash: false
+  delete_branches: false  # Keep branches for debugging in Phase 1

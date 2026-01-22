@@ -1,0 +1,31 @@
+{
+  "project": "my-test-project",
+  "base_branch": "dev",
+  "target_branch": "dev",
+  "created_at": "2026-01-22T00:00:00Z",
+  "updated_at": "2026-01-22T00:00:00Z",
+  "tasks": [
+    {
+      "id": "001",
+      "title": "Add simple utility function",
+      "description": "Create a basic math utility for testing Ralph workflow",
+      "priority": 10,
+      "status": "pending",
+      "work_doc": "work_docs/task_001.md",
+      "dependencies": [],
+      "tags": ["test", "phase1"],
+      "acceptance_criteria": [
+        "Function add(a, b) returns a + b",
+        "Tests pass"
+      ],
+      "validation": {
+        "tests_passing": false,
+        "linting_passing": false,
+        "type_check_passing": false,
+        "manual_review": false
+      },
+      "trials": [],
+      "created_at": "2026-01-22T00:00:00Z"
+    }
+  ]
+}
