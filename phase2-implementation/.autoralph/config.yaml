@@ -31,15 +31,16 @@ opencode:
 
 # Budget controls
 budgets:
-  max_parallel_agents: 1  # Phase 1: only 1 agent
-  max_total_time_hours: 2
-  max_cost_usd: 10.0
+  max_parallel_agents: 2  # Phase 2: up to 2 agents
+  max_total_time_hours: 4  # Increased for parallel execution
+  max_cost_usd: 20.0  # Increased for parallel execution
 
 # Selection criteria
 selection:
-  count: 1  # Phase 1: only 1 task
+  count: 2  # Phase 2: up to 2 tasks
   criteria: priority_and_unblocked
   min_priority: 1
+  require_independent: true  # Only select tasks with no dependencies
 
 # Merge configuration
 merge:
