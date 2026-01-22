@@ -1,10 +1,10 @@
-# Ralph Multi-Agent System - Phase 1 Implementation
+# Ralph Multi-Agent System - Phase 2 Implementation
 
-**Complete, ready-to-test implementation of the Ralph orchestration system**
+**Dual-agent parallel execution with all Phase 1 critical fixes**
 
 ## What This Is
 
-This directory contains a **fully functional Phase 1 implementation** of the Ralph multi-agent skills system. It merges the best ideas from both planning approaches into a working, testable system.
+This directory contains a **fully functional Phase 2 implementation** of the Ralph multi-agent skills system. It supports running 2 OpenCode agents in parallel, with critical bug fixes from Test 1 and enhanced merge safety.
 
 ## What's Included
 
@@ -17,13 +17,14 @@ Three Claude Code skills ready to use:
 
 ### 2. Supporting Scripts
 
-9 bash scripts that handle all the heavy lifting:
+10 bash scripts that handle all the heavy lifting:
 - `preflight.sh` - Environment checks
+- `task_selector.sh` - **NEW** Parallel task selection
 - `worktree_create.sh` - Git worktree creation
-- `opencode_spawn.sh` - Background agent spawning
-- `check_completion.sh` - Process status checking
+- `opencode_spawn.sh` - **FIXED** Background agent spawning with correct OpenCode syntax
+- `check_completion.sh` - **UPDATED** Process status checking with --all mode
 - `run_trials.sh` - Validation execution
-- `merge_execute.sh` - Merge and rollback
+- `merge_execute.sh` - **ENHANCED** Merge with mutex, npm install, and better test handling
 
 ### 3. Configuration & State
 
@@ -33,12 +34,18 @@ Three Claude Code skills ready to use:
 
 ### 4. Documentation
 
-- `PHASE1_TEST_GUIDE.md` - Complete step-by-step testing instructions
+- `PHASE2_TEST_GUIDE.md` - Complete step-by-step testing instructions for dual agents
 - Inline documentation in all skills and scripts
 
-## Key Features (Phase 1)
+## Key Features (Phase 2)
 
-✅ **Single agent execution** - Test with one task first
+✅ **Dual agent execution** - Run 2 independent tasks in parallel
+✅ **Task selection logic** - Automatically select independent tasks
+✅ **5-second stagger** - Prevents API rate limiting
+✅ **Merge mutex** - Sequential merges prevent conflicts
+✅ **Fixed OpenCode syntax** - All 6 critical issues from Test 1 resolved
+✅ **npm install support** - Automatic dependency installation after merge
+✅ **Better test handling** - Gracefully handles missing test scripts
 ✅ **File-based coordination** - All state in `.autoralph/`
 ✅ **OpenCode must commit** - Deterministic merging
 ✅ **Preflight checks** - Fail fast on environment issues
@@ -47,15 +54,26 @@ Three Claude Code skills ready to use:
 ✅ **Rollback on failure** - Safe merge operations
 ✅ **Configuration-driven** - Portable across repos
 
+## Critical Fixes from Test 1
+
+All 6 issues from the Phase 1 test have been fixed:
+
+1. ✅ **Invalid `--cwd` flag** → Now uses `cd "$WORKTREE_PATH" &&` instead
+2. ✅ **Invalid `--maxSteps` flag** → Removed entirely
+3. ✅ **Wrong model format** → Uses `provider/model_id` format (e.g., `anthropic/claude-sonnet-4-5`)
+4. ✅ **Message/flag ordering** → Message comes BEFORE `-f` flag
+5. ✅ **Missing npm install** → Automatically runs after merge when package.json changes
+6. ✅ **Test script handling** → Gracefully handles projects without test scripts
+
 ## Quick Start
 
 ### 1. Copy to Your Repo
 
 ```bash
 # In your test repository
-cp -r phase1-implementation/.claude .
-cp -r phase1-implementation/.autoralph .
-cp phase1-implementation/.gitignore .
+cp -r phase2-implementation/.claude .
+cp -r phase2-implementation/.autoralph .
+cp phase2-implementation/.gitignore .
 ```
 
 ### 2. Setup
@@ -77,14 +95,16 @@ vi .autoralph/config.yaml
 # Start Claude
 claude
 
-# Run skills
+# Run skills for 2 parallel agents
 /start-ralph
-# Wait 2-5 minutes
+# Wait 5-10 minutes for both agents
 /validate-ralph
+# Merge both tasks (run twice, once per task)
+/merge-agent
 /merge-agent
 ```
 
-See **PHASE1_TEST_GUIDE.md** for detailed instructions.
+See **PHASE2_TEST_GUIDE.md** for detailed instructions.
 
 ## Directory Structure
 
@@ -94,8 +114,9 @@ See **PHASE1_TEST_GUIDE.md** for detailed instructions.
 │   ├── SKILL.md            # Skill definition
 │   └── scripts/            # Supporting bash scripts
 │       ├── preflight.sh
+│       ├── task_selector.sh    # NEW: Parallel task selection
 │       ├── worktree_create.sh
-│       └── opencode_spawn.sh
+│       └── opencode_spawn.sh   # FIXED: Correct OpenCode syntax
 ├── validate-ralph/
 │   ├── SKILL.md
 │   └── scripts/
@@ -120,20 +141,22 @@ See **PHASE1_TEST_GUIDE.md** for detailed instructions.
 
 ## How It Works
 
-### Phase 1 Workflow
+### Phase 2 Workflow
 
 ```
 1. User: /start-ralph
    ↓
    Claude reads config & work ledger
    ↓
-   Creates git worktree (.autoralph/worktrees/task-001)
+   Selects 2 independent tasks (task_selector.sh)
    ↓
-   Generates prompt from work doc
+   For EACH task:
+     - Creates git worktree (.autoralph/worktrees/task-00X)
+     - Generates prompt from work doc
+     - Spawns OpenCode agent in background
+     - Waits 5 seconds before next agent (stagger)
    ↓
-   Spawns OpenCode agent in background
-   ↓
-   Returns PID and status
+   Returns PIDs and status for BOTH agents
 
 2. [OpenCode agent works independently]
    ↓
@@ -159,39 +182,49 @@ See **PHASE1_TEST_GUIDE.md** for detailed instructions.
    ↓
    Updates status.json and work_ledger.json
 
-4. User: /merge-agent
+4. User: /merge-agent (run once per validated task)
    ↓
    Claude generates merge plan
    ↓
    User confirms
    ↓
+   Acquires merge lock (prevents concurrent merges)
+   ↓
    Merges branch into dev
+   ↓
+   Detects package.json changes → runs npm install
    ↓
    Runs tests after merge
    ↓
-   On success: keeps merge
+   On success: keeps merge, releases lock
    ↓
-   On failure: rollback (git reset)
+   On failure: rollback (git reset), releases lock
+   ↓
+   Repeat for second task
 ```
 
 ## Architecture Highlights
 
-### Why It's Better
+### Why Phase 2 Is Better
 
-This implementation combines the best of both design approaches:
+Phase 2 builds on Phase 1 with critical improvements:
 
-**From Alternative Plan:**
+**New in Phase 2:**
+- ✨ Parallel execution - 2 agents work simultaneously
+- ✨ Task selection logic - Automatically picks independent tasks
+- ✨ Merge mutex - Safe sequential merges
+- ✨ OpenCode command fixes - All 6 Test 1 issues resolved
+- ✨ npm install support - Automatic dependency management
+- ✨ Better test handling - Graceful fallback for missing scripts
+- ✨ 5-second stagger - Prevents rate limiting
+
+**Retained from Phase 1:**
 - ✨ Configuration-driven (`.autoralph/config.yaml`)
 - ✨ Preflight checks
 - ✨ "OpenCode must commit" requirement
 - ✨ Per-attempt directory structure
 - ✨ Unified `.autoralph/` workspace
-
-**From Original Plan:**
-- ✨ Heartbeat monitoring (Phase 2)
-- ✨ Budget tracking (Phase 2)
 - ✨ Detailed validation levels
-- ✨ Risk documentation
 - ✨ Phased testing approach
 
 ### Key Design Decisions
@@ -202,31 +235,32 @@ This implementation combines the best of both design approaches:
 4. **Fail Fast** - Preflight checks catch environment issues early
 5. **Conservative Phase 1** - Single agent, preserved branches, minimal retry
 
-## What's NOT in Phase 1
+## What's NOT in Phase 2
 
-Phase 1 is intentionally simple. These features come later:
+Phase 2 focuses on parallel execution and critical fixes. These features come later:
 
-- ❌ Parallel execution (2+ agents) → Phase 2
-- ❌ Automatic retry with error context → Phase 2
-- ❌ Heartbeat monitoring → Phase 2
-- ❌ Cost tracking → Phase 2
+- ❌ Automatic retry with error context → Phase 3
+- ❌ Heartbeat monitoring → Phase 3
+- ❌ Cost tracking → Phase 3
+- ❌ More than 2 parallel agents → Phase 3
 - ❌ Dependency analysis → Phase 3
 - ❌ Complex merge ordering → Phase 3
 - ❌ Dashboard/monitoring UI → Phase 4
 
 ## Testing Phases
 
-### Phase 1 (This Implementation)
+### Phase 1 (Completed)
 - 1 task, 1 agent
 - Simple test case
-- Validate core workflow
-- **Timeline:** 10 minutes
+- Validated core workflow
+- **Status:** ✅ Complete with 6 identified issues
 
-### Phase 2 (Next Step)
-- 2-3 tasks, parallel agents
-- Independent tasks
+### Phase 2 (This Implementation)
+- 2 tasks, 2 parallel agents
+- Independent tasks only
 - Validate parallel execution
-- **Timeline:** 1 hour
+- Fixed all Phase 1 issues
+- **Timeline:** 20-30 minutes
 
 ### Phase 3 (Production)
 - 4+ tasks with dependencies
@@ -298,22 +332,24 @@ merge_test_cmd: go test ./...
 
 ## Troubleshooting
 
-See **PHASE1_TEST_GUIDE.md** for:
-- Common issues and solutions
-- Debug commands
+See **PHASE2_TEST_GUIDE.md** for:
+- Common issues and solutions for parallel execution
+- Debug commands for multiple agents
 - Reset procedures
 - Log locations
+- Merge mutex troubleshooting
 
 ## Next Steps
 
-After Phase 1 works:
+After Phase 2 works:
 
-1. **Add more tasks** to work_ledger.json
-2. **Test parallel execution** (Phase 2)
-3. **Add retry logic** for failures
-4. **Implement heartbeat monitoring**
+1. **Scale to 3-4 agents** in parallel
+2. **Add retry logic** with error context
+3. **Implement heartbeat monitoring**
+4. **Add dependency-aware task scheduling**
 5. **Build dashboard** for visualization
-6. **Integrate with CI/CD**
+6. **Integrate cost tracking**
+7. **Add CI/CD integration**
 
 ## Files You'll Customize
 
@@ -335,10 +371,11 @@ These files are **generated** and should not be edited:
 
 Questions or issues? Check:
 
-1. **PHASE1_TEST_GUIDE.md** - Detailed testing instructions
-2. **RALPH_MERGED_SPECIFICATION.md** - Complete architecture
-3. Skill SKILL.md files - Detailed skill documentation
-4. Script comments - Inline documentation
+1. **PHASE2_TEST_GUIDE.md** - Detailed testing instructions for dual agents
+2. **RALPH_TEST1_REPORT.md** - Analysis of Phase 1 issues and fixes
+3. **RALPH_MERGED_SPECIFICATION.md** - Complete architecture
+4. Skill SKILL.md files - Detailed skill documentation
+5. Script comments - Inline documentation
 
 ## License
 
@@ -354,10 +391,12 @@ This implementation synthesizes ideas from:
 
 ---
 
-**Ready to test?** Start with **PHASE1_TEST_GUIDE.md**
+**Ready to test?** Start with **PHASE2_TEST_GUIDE.md**
 
-**Need details?** Read **RALPH_MERGED_SPECIFICATION.md**
+**Phase 1 issues?** See **RALPH_TEST1_REPORT.md** for all fixes
+
+**Need architecture details?** Read **RALPH_MERGED_SPECIFICATION.md**
 
 **Want to customize?** Edit `.autoralph/config.yaml`
 
-🚀 **Let's build something amazing with Ralph!**
+🚀 **Phase 2: Parallel agents working together!**

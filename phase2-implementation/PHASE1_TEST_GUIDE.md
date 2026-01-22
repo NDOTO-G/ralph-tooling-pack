@@ -1,5 +1,13 @@
 # Ralph Phase 1 - Test Guide
 
+> **⚠️ OUTDATED:** This guide is for the original Phase 1 implementation with known issues.
+>
+> **For Phase 2 with all fixes, see [PHASE2_TEST_GUIDE.md](PHASE2_TEST_GUIDE.md)**
+>
+> Phase 1 had 6 critical issues that are now fixed in Phase 2. This guide is kept for historical reference.
+
+---
+
 **Goal:** Validate the entire Ralph multi-agent workflow with ONE simple task
 
 ## What You'll Test
